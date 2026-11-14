@@ -1,6 +1,10 @@
 import json
+import logging
+
 from datetime import datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def save_raw(payload: dict, output_dir: Path) -> Path:
@@ -22,5 +26,7 @@ def save_raw(payload: dict, output_dir: Path) -> Path:
 
     with output_file.open("w", encoding="utf-8") as file:
         json.dump(payload, file, ensure_ascii=False, indent=2)
+
+    logger.info("Saved raw payload to %s", output_file)
 
     return output_file
