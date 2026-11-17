@@ -7,6 +7,9 @@ from crypto_data_platform.logging_config import configure_logging
 from crypto_data_platform.storage import save_raw
 from crypto_data_platform.transform import normalize_market
 from crypto_data_platform.config import load_settings
+from datetime import datetime, timezone
+
+from crypto_data_platform.database import load_market
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,8 @@ def main() -> None:
             timeout=settings.request_timeout,
         )
 
+        observed_at = datetime.now(timezone.utc)
+
         stage = "save_raw"
         output_file = save_raw(
             payload,
@@ -39,6 +44,13 @@ def main() -> None:
 
         stage = "normalize"
         records = normalize_market(payload)
+
+        stage = "load_database"
+        load_market(
+            records=records,
+            observed_at=observed_at,
+            settings=settings,
+        )
 
     except Exception:
         logger.exception("Pipeline failed at stage=%s", stage)
